@@ -10,6 +10,12 @@ HEMS-Arena is an open, contribution-oriented benchmarking platform for residenti
 
 **Code repository**: [github.com/Homensia/HEMS-Arena](https://github.com/Homensia/HEMS-Arena)
 
+<p align="center">
+  <img src="assets/hems_arena_overview.png" alt="HEMS-Arena Framework Overview" width="100%"/>
+</p>
+
+*Figure 1: HEMS-Arena framework. A single YAML configuration defines the full experiment; the platform instantiates strategies from a shared library, connects them to simulation environments through adapters, and exports standardized comparative results.*
+
 ## Key Features
 
 - **Modular architecture**: Algorithm + Reward + Strategy composition with registry/factory patterns
@@ -22,15 +28,22 @@ HEMS-Arena is an open, contribution-oriented benchmarking platform for residenti
 ## Architecture Overview
 
 ```
-HEMSAgent = Algorithm + RewardFunction + Strategy
+Agent    = Algorithm + Reward
+Strategy = orchestration of one or more Agents
 ```
 
 HEMS-Arena is organized as a four-layer experimental stack:
 
 1. **Environment layer** -- adapters expose a unified API for heterogeneous simulators and datasets
-2. **Controller layer** -- reusable algorithm and reward components are composed into agents
-3. **Strategy layer** -- orchestration logic coordinates one or more agents
+2. **Controller layer** -- an **Agent** is the composition of an Algorithm (how actions are selected) and a Reward (what the controller is optimized for)
+3. **Strategy layer** -- a **Strategy** wraps one or more agents and defines how they are deployed and coordinated (single-agent, multi-agent, hierarchical)
 4. **Pipeline layer** -- `BenchmarkRunner` executes standardized train/validate/test workflows from YAML specifications
+
+<p align="center">
+  <img src="assets/hems_arena_architecture.png" alt="HEMS-Arena Layered Architecture" width="85%"/>
+</p>
+
+*Figure 2: HEMS-Arena as a shared experimental layer for residential HEMS benchmarking. Simulation environments are connected through adapters, control methods are composed from reusable algorithm and reward components, strategies orchestrate one or more agents, and the BenchmarkRunner executes standardized benchmark protocols and exports reusable evaluation artifacts.*
 
 ## Implemented Methods
 
@@ -101,6 +114,12 @@ python -m hems.main --buildings 1 --days 7 --agents baseline rbc --environment d
 ```
 
 ## Reproducing Paper Results (Scenario S1)
+
+<p align="center">
+  <img src="assets/hems_arena_workflow.png" alt="HEMS-Arena Benchmark Workflow" width="85%"/>
+</p>
+
+*Figure 3: Configuration-driven benchmark workflow. A single YAML specification defines the scenario, methods, and protocol; the pipeline then instantiates the corresponding components, executes the train/validate/test stages, and exports standardized artifacts including time-series traces, aggregated KPIs, MCDA rankings, and statistical summaries.*
 
 The reference benchmark from the paper is fully specified in [`benchmark_configs/scenario_s1.yaml`](benchmark_configs/scenario_s1.yaml).
 
