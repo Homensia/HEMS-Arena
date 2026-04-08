@@ -1,0 +1,95 @@
+# ============================================================================
+# Round-Robin Training Benchmark Example
+# ============================================================================
+# Trains MP_PPO in round-robin mode across 3 buildings
+# One shared model, cycling through buildings step-by-step
+# ============================================================================
+
+benchmark:
+  name: "MP_PPO_RoundRobin_0"
+  description: "Round-robin MP_PPO training on 3 buildings (CityLearn 2022)"
+  author: "Akrem Dabbech"
+  tags: ["mp_ppo", "round_robin", "transformer", "ppo"]
+
+  # --------------------------------------------------------------------------
+  # Global settings
+  # --------------------------------------------------------------------------
+  seed: 42
+  output_dir: "experiments/Benchmark"
+  use_gpu: true
+
+  # --------------------------------------------------------------------------
+  # Dataset
+  # --------------------------------------------------------------------------
+  dataset:
+    type: "original"
+    name: "citylearn_challenge_2022_phase_all"
+    simulation_days: 60
+
+  # --------------------------------------------------------------------------
+  # Environment
+  # --------------------------------------------------------------------------
+  environment:
+    type: "citylearn"
+    central_agent: true
+
+  # --------------------------------------------------------------------------
+  # Tariff
+  # --------------------------------------------------------------------------
+  tariff:
+    type: "dynamic"
+    name: "citylearn_default"
+
+  # --------------------------------------------------------------------------
+  # Agents
+  # --------------------------------------------------------------------------
+  agents:
+    - name: "mp_ppo"
+      enabled: true
+      config:
+       
+
+        pretrained_model_path: "models/mp_ppo_predictor_best.pt"
+
+  # --------------------------------------------------------------------------
+  # Training
+  # --------------------------------------------------------------------------
+  training:
+    mode: "round_robin"      # IMPORTANT: matches yaml_loader + training_modes
+    episodes: 500
+    save_frequency: 50
+    save_best: true
+    save_final: true
+
+    buildings:
+      selection: "manual"
+      ids: ["Building_1", "Building_2", "Building_3"]
+
+    early_stopping:
+      metric: "total_cost"
+      mode: "min"
+      patience: 40
+      min_delta: 0.001
+      warmup_episodes: 50
+
+  # --------------------------------------------------------------------------
+  # Validation
+  # --------------------------------------------------------------------------
+  validation:
+    enabled: false
+    episodes: 50
+    frequency: 50
+    buildings:
+      selection: "manual"
+      ids: ["Building_4"]
+
+  # --------------------------------------------------------------------------
+  # Testing
+  # --------------------------------------------------------------------------
+  testing:
+    enabled: false
+    mode: "normal"
+    episodes: 20
+    buildings:
+      selection: "manual"
+      ids: ["Building_13"]

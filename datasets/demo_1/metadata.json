@@ -1,0 +1,113 @@
+{
+  "config": {
+    "scenario_name": "demo",
+    "output_dir": "./datasets",
+    "days": 365,
+    "step_minutes": 60,
+    "seed": 42,
+    "n_houses": 3,
+    "weather": {
+      "model": "simple",
+      "ambient_temp_mean_c": 15.0,
+      "ambient_temp_amp_c": 10.0,
+      "daily_temp_amp_c": 5.0,
+      "noise_std_c": 1.5,
+      "cloud_markov_levels": [
+        0.9,
+        0.6,
+        0.2
+      ],
+      "cloud_transition": [
+        [
+          0.85,
+          0.12,
+          0.03
+        ],
+        [
+          0.2,
+          0.6,
+          0.2
+        ],
+        [
+          0.1,
+          0.2,
+          0.7
+        ]
+      ]
+    },
+    "house": {
+      "base_load_kwh_day_mean": 10.0,
+      "weekday_multiplier": 1.0,
+      "weekend_multiplier": 1.1,
+      "morning_peak_kw": 0.6,
+      "evening_peak_kw": 0.9,
+      "noise_ar1_phi": 0.7,
+      "noise_sigma_kw": 0.05,
+      "heat_sensitivity_kwh_per_dd": 0.0,
+      "cool_sensitivity_kwh_per_dd": 0.0
+    },
+    "pv": {
+      "dc_capacity_kwp": 3.0,
+      "tilt_deg": 30.0,
+      "azimuth_deg": 0.0,
+      "performance_ratio": 0.85,
+      "gamma_temp_coeff_per_c": -0.0045,
+      "inverter_efficiency": 0.96,
+      "shading_factor": 0.0,
+      "noct_c": 45.0
+    },
+    "ev": {
+      "evs_per_house": 1,
+      "battery_kwh": 50.0,
+      "charger_power_kw": 7.4,
+      "charging_efficiency": 0.92,
+      "kwh_per_km": 0.16,
+      "daily_trip_km_mean": 30.0,
+      "daily_trip_km_std": 15.0,
+      "arrival_hour_mean": 18.5,
+      "arrival_hour_std": 1.5,
+      "departure_hour_mean": 7.5,
+      "departure_hour_std": 1.0,
+      "min_target_soc_at_departure": 0.8,
+      "policy": "immediate",
+      "enable_v2h": false
+    },
+    "tariff": {
+      "type": "FR_TEMPO",
+      "calendar": {
+        "blue_days": 300,
+        "white_days": 43,
+        "red_days": 22
+      },
+      "price_hp_blue": 0.18,
+      "price_hc_blue": 0.14,
+      "price_hp_white": 0.22,
+      "price_hc_white": 0.16,
+      "price_hp_red": 0.54,
+      "price_hc_red": 0.3
+    },
+    "timezone": "Europe/Paris"
+  },
+  "seed": 42,
+  "generator_version": "0.1.0",
+  "validation": {
+    "n_steps": 8760,
+    "all_indexes_aligned": true,
+    "pv_ok": true,
+    "load_nonneg": true,
+    "ev_soc_ok": true,
+    "prices_finite": true
+  },
+  "file_hashes": {
+    "demo_house_elec_1_1.csv": "2677dd2c901f97bb6624d06b58bcfabd3bf827bda375457db147ad8fd2451f9f",
+    "demo_pv_generation_1_1.csv": "dfd635d3477fe3f40887104ba43decd5a43551fe9e5673f623292ed61587edb3",
+    "demo_house_elec_1_2.csv": "0d953a1b332a5e863b32ebbc7589107b43bc92132a3d6291ce9f78ce3f084af3",
+    "demo_ev_1_2_1.csv": "3b5bb540a5515cad2652b9791ac853957fa62e87234602eae6921205409875c0",
+    "demo_pv_generation_1_2.csv": "dfd635d3477fe3f40887104ba43decd5a43551fe9e5673f623292ed61587edb3",
+    "demo_ev_1_3_1.csv": "75dabd00530e7c1a20edffaac6964e404a7e4651d6d75202270817d2a963e5bd",
+    "demo_pv_generation_1_3.csv": "dfd635d3477fe3f40887104ba43decd5a43551fe9e5673f623292ed61587edb3",
+    "demo_house_elec_1_3.csv": "71e0d2d4acba6756d80e1c6aa6c6d4af26345fee5d7e2af20880eb0b15037122",
+    "demo_ev_1_1_1.csv": "a04eba675b5e65e951dd8ec93cb877cedfbb5ee700e81543fce58ce0e9984668",
+    "demo_price_1.csv": "587a962e3d8699d3e4e647acf996095b593bf40dc265ec65a43ee031b65ae213"
+  }
+}

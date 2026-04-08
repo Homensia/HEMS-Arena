@@ -1,0 +1,46 @@
+{
+  "building_id": 1,
+  "dp_metrics": {
+    "power_cost": 1491.1322784035403,
+    "emission_cost": 755.6644911686396,
+    "total_cost": 2246.79676957218,
+    "peak_demand": 7.053634845563267,
+    "energy_imported": 4833.559057523185,
+    "energy_exported": 1797205.4315787677,
+    "battery_cycles": 120.40278556457491,
+    "final_soc": 0.9999279700656614,
+    "final_capacity": 6.3846069639737,
+    "capacity_degradation": 0.0153930360263006
+  },
+  "baseline_metrics": {
+    "power_cost": 1654.8857535762,
+    "emission_cost": 841.4256972778469,
+    "total_cost": 2496.3114508540466,
+    "peak_demand": 7.0536666,
+    "energy_imported": 5420.225731145,
+    "energy_exported": 1797961.009483404,
+    "battery_cycles": 0.0,
+    "final_soc": 0.0,
+    "final_capacity": 6.4,
+    "capacity_degradation": 0.0
+  },
+  "improvements": {
+    "cost_savings_percent": 9.995334564383054,
+    "peak_reduction_percent": 0.00045018340861948276,
+    "absolute_cost_savings": 249.51468128186661
+  },
+  "proxy_weights": {
+    "l1_penalty": 0.1300366652733203,
+    "l2_penalty": 0.009508553021774526,
+    "proxy_weight1": 0.011557095624191585,
+    "proxy_weight2": 0.08482562812998984,
+    "proxy_weight3": 2.61560899997805
+  },
+  "solver_config": {
+    "n_states": 101,
+    "n_horizon": 8760,
+    "battery_capacity": 6.4,
+    "battery_power": 4.0
+  },
+  "computation_time_seconds": 415.2690680027008
+}

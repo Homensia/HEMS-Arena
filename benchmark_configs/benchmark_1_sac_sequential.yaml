@@ -1,0 +1,103 @@
+# ===========================================================================
+# Sequential Training Benchmark - sac 
+# ============================================================================
+# Trains sac sequentially on 10 buildings with transfer learning
+# Building_1 → Building_2 → ... → Building_10 (Q-tables transferred between)
+# ============================================================================
+
+benchmark:
+  name: "sac_Sequential_benchmark_1"
+  description: "Sequential sac training with transfer learning"
+  author: "Akrem Dabbech"
+  tags: ["tql", "sequential", "transfer_learning", "q_learning"]
+  
+  # Global settings
+  seed: 42
+  output_dir: "experiments/sequential_sac"
+  use_gpu: true
+  
+  # Dataset
+  dataset:
+    type: "original"
+    name: "citylearn_challenge_2022_phase_all"
+    simulation_days: 60
+    
+  # Environment (decentralized mode)
+  environment:
+    type: "citylearn"
+    central_agent: false
+    
+  # Tariff
+  tariff:
+    type: "default"
+    
+  # Agent
+  agents:
+    - name: "sac"
+      enabled: true
+      config:
+        policy: 'MlpPolicy' 
+        learning_rate: 0.0003
+        buffer_size: 87600
+        batch_size: 256
+        tau: 0.005
+        gamma: 0.99
+        train_start_steps: 730
+        train_freq: 336
+        gradient_steps: 1
+        
+  # Training (Sequential Mode)
+  training:
+    mode: "sequential"
+    episodes: 600
+    buildings:
+      selection: "manual"
+      ids: ["Building_1","Building_2","Building_3","Building_4","Building_5","Building_6","Building_7","Building_8","Building_9","Building_10"]
+    save_frequency: 100
+    save_best: true
+    save_final: true
+    early_stopping:
+      enabled: true
+      patience: 80
+      min_delta: 0.01
+         
+  # Validation (disabled)
+  validation:
+    enabled: false
+    episodes: 20
+    frequency: 50
+    buildings:
+      selection: "manual"
+      ids: []
+      
+  # Testing (on different buildings)
+  testing:
+    enabled: true
+    mode: "normal"
+    episodes: 20
+    buildings:
+      selection: "manual"
+      ids: ["Building_11","Building_12","Building_13","Building_14","Building_15","Building_16","Building_17"]
+      
+  # Reward
+  reward:
+    name: "custom_v5"
+    config:
+      alpha_import_hp: 0.6
+      alpha_peak: 0.01
+      alpha_pv_base: 0.10
+      alpha_pv_soc: 0.35
+      alpha_soc: 0.05
+      soc_lo: 0.30
+      soc_hi: 0.60
+      
+  # Analysis
+  analysis:
+    perform_eda: false
+    save_plots: true
+    generate_report: true
+    
+  # Advanced
+  advanced:
+    sequential:
+      transfer_learning: true  # Transfer Q-table from previous building

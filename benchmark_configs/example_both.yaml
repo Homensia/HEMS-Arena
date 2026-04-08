@@ -1,0 +1,112 @@
+# ============================================================================
+# Compare Sequential vs Parallel Training
+# ============================================================================
+# Runs BOTH sequential and parallel training to compare approaches
+# Useful for research to understand trade-offs between the two methods
+# ============================================================================
+
+benchmark:
+  name: "DQN_Sequential_vs_Parallel_Comparison"
+  description: "Compare sequential and parallel training approaches for DQN"
+  author: "Akrem Dabbech"
+  tags: ["dqn", "comparison", "sequential", "parallel", "research"]
+  
+  # Global settings
+  seed: 42
+  output_dir: "experiments/comparison_seq_vs_par"
+  use_gpu: true
+  
+  # Dataset
+  dataset:
+    type: "original"
+    name: "citylearn_challenge_2022_phase_all"
+    simulation_days: 30
+    
+  # Environment (decentralized mode)
+  environment:
+    type: "citylearn"
+    central_agent: false
+    
+  # Tariff
+  tariff:
+    type: "hp_hc"
+    price_hp: 0.22
+    price_hc: 0.14
+    hc_hours: [23, 0, 1, 2, 3, 4, 5, 6]
+    
+  # Agent
+  agents:
+    - name: "dqn"
+      enabled: true
+      config:
+        action_bins: 31
+        buffer_size: 400000
+        batch_size: 128
+        learning_rate: 0.0003
+        gamma: 0.99
+        epsilon_start: 1.0
+        epsilon_end: 0.01
+        epsilon_decay: 0.995
+        
+  # Training (BOTH modes)
+  training:
+    mode: "both"  # Run sequential AND parallel
+    episodes: 150  # Per building for sequential, total for parallel
+    buildings:
+      selection: "manual"
+      ids: ["Building_1", "Building_2", "Building_3"]
+    save_frequency: 50
+    save_best: true
+    save_final: true
+    early_stopping:
+      enabled: true
+      patience: 50
+      min_delta: 0.01
+      
+  # Validation
+  validation:
+    enabled: true
+    episodes: 20
+    frequency: 50
+    buildings:
+      selection: "manual"
+      ids: ["Building_4", "Building_5"]
+      
+  # Testing
+  testing:
+    enabled: true
+    mode: "normal"
+    episodes: 50
+    buildings:
+      selection: "manual"
+      ids: ["Building_6", "Building_7"]
+      
+  # Reward
+  reward:
+    name: "custom_v5"
+    config:
+      alpha_import_hp: 0.6
+      alpha_peak: 0.01
+      alpha_pv_base: 0.10
+      alpha_pv_soc: 0.35
+      alpha_soc: 0.05
+      soc_lo: 0.30
+      soc_hi: 0.60
+      
+  # Analysis
+  analysis:
+    perform_eda: false
+    save_plots: true
+    generate_report: true
+    plot_types:
+      - "training_curves"
+      - "performance_comparison"
+      - "mode_comparison"  # Special plot for sequential vs parallel
+      
+  # Advanced
+  advanced:
+    sequential:
+      transfer_learning: true
+    parallel:
+      num_workers: 3
+    compare_modes: true  # Generate comparison analysis

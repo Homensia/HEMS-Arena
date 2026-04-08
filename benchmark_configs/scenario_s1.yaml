@@ -1,0 +1,163 @@
+# ============================================================================
+# Scenario S1 — Reference Benchmark (EDA '26 Paper)
+# ============================================================================
+# Reproduces the reference benchmark from:
+#   Bouchabou & Dabbech, "HEMS-Arena: An Open-Source Modular Framework for
+#   Reproducible Evaluation of Residential Energy Management Strategies",
+#   EDA '26, Banff, Canada.
+#
+# - CityLearn Challenge 2022 dataset, 17 residential buildings
+# - Training: Buildings 1-10, Testing: Buildings 11-17
+# - French TOU tariff (HP/HC), battery-only flexibility
+# - 100 training episodes per method, seed 42
+# - Full-year horizon (8760 hourly timesteps)
+#
+# Usage:
+#   python -m hems.main --benchmark-config benchmark_configs/scenario_s1.yaml
+# ============================================================================
+
+benchmark:
+  name: "scenario_s1"
+  description: "Reference benchmark — EDA '26 paper, Scenario S1"
+  author: "Bouchabou & Dabbech"
+  tags: ["paper", "scenario_s1", "reference_benchmark"]
+
+  # Global settings
+  seed: 42
+  output_dir: "experiments/scenario_s1"
+  use_gpu: true
+
+  # Dataset: CityLearn Challenge 2022, full year (365 days)
+  dataset:
+    type: "original"
+    name: "citylearn_challenge_2022_phase_all"
+    simulation_days: 365
+
+  # Environment
+  environment:
+    type: "citylearn"
+    central_agent: false
+
+  # French TOU tariff (HP/HC)
+  tariff:
+    type: "hp_hc"
+    price_hp: 0.22
+    price_hc: 0.14
+    hc_hours: [23, 0, 1, 2, 3, 4, 5, 6]
+
+  # ── Methods evaluated in the paper ──
+
+  agents:
+    # Baselines
+    - name: "baseline"
+      enabled: true
+      config: {}
+
+    - name: "rbc"
+      enabled: true
+      config: {}
+
+    # Optimization-based
+    - name: "mpc_forecast"
+      enabled: true
+      config: {}
+
+    # Learning-based
+    - name: "dqn"
+      enabled: true
+      config:
+        action_bins: 31
+        buffer_size: 300000
+        batch_size: 128
+        learning_rate: 0.0003
+        gamma: 0.99
+        epsilon_start: 1.0
+        epsilon_end: 0.08
+        epsilon_decay_steps: 150000
+        target_update_freq: 1000
+        train_start_steps: 1000
+        hidden_layers: [256, 256]
+        history_length: 5
+
+    - name: "sac"
+      enabled: true
+      config:
+        policy: "MlpPolicy"
+        learning_rate: 0.0003
+        buffer_size: 1000000
+        batch_size: 256
+        tau: 0.005
+        gamma: 0.99
+        train_freq: 1
+        gradient_steps: 1
+
+    - name: "Chen_Bu_p2p"
+      enabled: true
+      config: {}
+
+    # Exploratory variant (not in main comparison table)
+    # Uncomment to include MP-PPO:
+    # - name: "mp_ppo"
+    #   enabled: true
+    #   config: {}
+
+  # ── Training ──
+
+  training:
+    mode: "sequential"
+    episodes: 100
+    buildings:
+      selection: "manual"
+      ids:
+        - "Building_1"
+        - "Building_2"
+        - "Building_3"
+        - "Building_4"
+        - "Building_5"
+        - "Building_6"
+        - "Building_7"
+        - "Building_8"
+        - "Building_9"
+        - "Building_10"
+    save_best: true
+    save_final: true
+
+  # No validation split (direct train-test design)
+  validation:
+    enabled: false
+
+  # ── Testing ──
+
+  testing:
+    enabled: true
+    mode: "normal"
+    buildings:
+      selection: "manual"
+      ids:
+        - "Building_11"
+        - "Building_12"
+        - "Building_13"
+        - "Building_14"
+        - "Building_15"
+        - "Building_16"
+        - "Building_17"
+
+  # ── Reward function ──
+
+  reward:
+    name: "custom_v5"
+    config:
+      alpha_import_hp: 0.6
+      alpha_peak: 0.01
+      alpha_pv_base: 0.10
+      alpha_pv_soc: 0.35
+      alpha_soc: 0.05
+      soc_lo: 0.30
+      soc_hi: 0.60
+
+  # ── Analysis ──
+
+  analysis:
+    perform_eda: false
+    save_plots: true
+    generate_report: true

@@ -1,0 +1,42 @@
+{
+  "building_1": {
+    "timesteps": 8760,
+    "avg_load_kw": 1.208145338441895,
+    "max_load_kw": 7.9874835,
+    "avg_solar_kw": 205.83608868915638,
+    "max_solar_kw": 976.25,
+    "total_energy_kwh": 10583.353164751
+  },
+  "building_2": {
+    "timesteps": 8760,
+    "avg_load_kw": 1.0677627036606199,
+    "max_load_kw": 6.8431334,
+    "avg_solar_kw": 154.7742590209178,
+    "max_solar_kw": 786.0833,
+    "total_energy_kwh": 9353.60128406703
+  },
+  "building_3": {
+    "timesteps": 8760,
+    "avg_load_kw": 0.8185428162763612,
+    "max_load_kw": 6.101333,
+    "avg_solar_kw": 166.0407466349863,
+    "max_solar_kw": 843.7125,
+    "total_energy_kwh": 7170.435070580924
+  },
+  "building_4": {
+    "timesteps": 8760,
+    "avg_load_kw": 1.2320982132294351,
+    "max_load_kw": 6.7496166,
+    "avg_solar_kw": 139.503502466395,
+    "max_solar_kw": 706.0367,
+    "total_energy_kwh": 10793.180347889851
+  },
+  "building_5": {
+    "timesteps": 8760,
+    "avg_load_kw": 1.0054387192324301,
+    "max_load_kw": 4.9387665,
+    "avg_solar_kw": 173.16327687454566,
+    "max_solar_kw": 818.2875,
+    "total_energy_kwh": 8807.643180476087
+  }
+}
