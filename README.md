@@ -8,8 +8,6 @@
 
 HEMS-Arena is an open, contribution-oriented benchmarking platform for residential energy management. Rather than proposing another standalone simulator, it provides a shared **experimental layer** in which environments are connected through adapters, controllers are built from decoupled algorithm and reward components, strategies orchestrate one or more agents, and benchmark execution is governed by a configuration-first workflow.
 
-**Code repository**: [github.com/Homensia/HEMS-Arena](https://github.com/Homensia/HEMS-Arena)
-
 <p align="center">
   <img src="assets/hems_arena_overview.png" alt="HEMS-Arena Framework Overview" width="100%"/>
 </p>
@@ -138,7 +136,7 @@ python -m hems.main --buildings 1 --days 7 --agents baseline rbc dqn --gpu
 # Run with a YAML benchmark config
 python -m hems.main --benchmark-config benchmark_configs/example_sequential.yaml
 
-# Quick test with the dummy environment (no CityLearn dependency)
+# Quick test with the dummy environment (synthetic data, no dataset needed)
 python -m hems.main --buildings 1 --days 7 --agents baseline rbc --environment dummy
 ```
 
@@ -241,7 +239,6 @@ HEMS-Arena/
 │   └── visualization/           # Plotting (matplotlib, Plotly)
 ├── datasets/                    # CityLearn datasets (included)
 ├── data/external/               # Precomputed baselines (included)
-├── models/                      # Pretrained model weights (generated locally)
 ├── synthetic_data/              # Synthetic dataset generator
 ├── benchmark_configs/           # YAML experiment configs (including scenario_s1.yaml)
 ├── tests/                       # Test suite
