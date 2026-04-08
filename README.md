@@ -18,7 +18,7 @@ HEMS-Arena is an open, contribution-oriented benchmarking platform for residenti
 
 ## Key Features
 
-- **Modular architecture**: Algorithm + Reward + Strategy composition with registry/factory patterns
+- **Modular architecture**: Agent = Algorithm + Reward; Strategy as orchestration wrapper; registry/factory patterns
 - **Environment independence**: Adapters decouple controllers from simulator backends (CityLearn, Dummy)
 - **Configuration-driven experiments**: A single YAML file defines the full benchmark protocol
 - **Reproducibility**: Explicit seed management, configuration logging, artifact export
@@ -27,23 +27,52 @@ HEMS-Arena is an open, contribution-oriented benchmarking platform for residenti
 
 ## Architecture Overview
 
+HEMS-Arena is designed not merely as a benchmark implementation for a single paper, but as an open benchmarking platform for residential HEMS research. Its core objective is to provide a shared experimental layer in which simulation environments, datasets, algorithms, rewards, agents, and strategies can be integrated as reusable benchmark assets.
+
+### Design Goals
+
+The architecture is guided by six core goals:
+
+1. **(G1) Modularity** -- independently swappable components
+2. **(G2) Environment independence** -- controller reuse across simulators via adapters
+3. **(G3) Configuration-first experimentation** -- explicit YAML specifications
+4. **(G4) Reproducibility** -- strict seed and artifact management
+5. **(G5) Extensible evaluation** -- standardized KPI computation and post-analysis
+6. **(G6) Community extensibility** -- external contributions without modifying the benchmark core
+
+### Layered Experimental Stack
+
+HEMS-Arena is organized as a layered benchmarking stack with four levels:
+
+1. **Environment layer** -- adapters expose a unified `reset`/`step` API for heterogeneous simulators and datasets. Three adapter types bridge simulator-specific formats: observation adapters (`hems/core/adapters.py`) normalize native observations into flat vectors, action adapters convert between centralized and decentralized action modes, and reward adapters (`hems/environments/citylearn/adapters/`) extract physical signals for objective computation. Algorithms and rewards have no direct dependency on a specific backend.
+2. **Controller layer** -- an **Agent** is the executable composition of an **Algorithm** (how actions are produced) and a **Reward** (what the controller is optimized for). Algorithms are defined independently of the reward specification.
+3. **Strategy layer** -- a **Strategy** wraps one or more agents and defines deployment logic. The current implementation provides a `SingleAgentStrategy` where one centralized agent controls all buildings. The architecture exposes a `BaseStrategy` interface designed for future multi-agent or hierarchical extensions.
+4. **Pipeline layer** -- the `BenchmarkRunner` executes standardized train/validate/test workflows from YAML specifications. Splits, budgets, seeding, and metrics are controlled by the runner and the YAML protocol, not hidden inside controller code.
+
 ```
 Agent    = Algorithm + Reward
 Strategy = orchestration of one or more Agents
 ```
 
-HEMS-Arena is organized as a four-layer experimental stack:
-
-1. **Environment layer** -- adapters expose a unified API for heterogeneous simulators and datasets
-2. **Controller layer** -- an **Agent** is the composition of an Algorithm (how actions are selected) and a Reward (what the controller is optimized for)
-3. **Strategy layer** -- a **Strategy** wraps one or more agents and defines how they are deployed and coordinated (single-agent, multi-agent, hierarchical)
-4. **Pipeline layer** -- `BenchmarkRunner` executes standardized train/validate/test workflows from YAML specifications
-
 <p align="center">
   <img src="assets/hems_arena_architecture.png" alt="HEMS-Arena Layered Architecture" width="85%"/>
 </p>
 
-*Figure 2: HEMS-Arena as a shared experimental layer for residential HEMS benchmarking. Simulation environments are connected through adapters, control methods are composed from reusable algorithm and reward components, strategies orchestrate one or more agents, and the BenchmarkRunner executes standardized benchmark protocols and exports reusable evaluation artifacts.*
+*Figure 2: HEMS-Arena as a shared experimental layer. Simulation environments are connected through adapters, control methods are composed from reusable algorithm and reward components, strategies orchestrate one or more agents, and the BenchmarkRunner executes standardized benchmark protocols.*
+
+### Configuration-Driven Execution
+
+Experiments are declared through a single YAML file specifying: (i) the scenario (backend, dataset, horizon), (ii) the methods (agents and optional strategy wrappers), and (iii) the protocol (train/test splits, episode budgets, random seeds, training mode). At runtime, a registry/factory mechanism resolves symbolic identifiers into concrete implementations and instantiates them with default hyperparameters that can be overridden per experiment.
+
+This configuration-first approach makes experiments easier to reproduce and audit, and enables platform growth: new components can be plugged into the same workflow simply by being referenced in YAML, without modifying the pipeline core.
+
+### Software Extensibility Patterns
+
+Three design patterns play a central role: the **adapter** pattern isolates simulator-specific details, the **registry** maps YAML identifiers to concrete classes, and the **factory** composes them into executable benchmark objects. Together, they enable the addition of new components with minimal changes to the core platform.
+
+### Reproducibility and Traceability
+
+Reproducibility is built into the architecture through explicit seed management across Python, NumPy, and PyTorch (CPU/CUDA), with deterministic CUDNN mode enabled at the start of each experiment (`hems/utils/seed_manager.py`). A configuration summary and benchmark results are saved alongside experiment outputs for traceability.
 
 ## Implemented Methods
 
@@ -86,7 +115,7 @@ The repository ships with everything needed to run experiments:
 | `datasets/citylearn_datasets/` | CityLearn Challenge 2022 dataset (17 buildings, 8760 hourly timesteps) | ~13 MB |
 | `datasets/demo_1/` | Lightweight demo dataset for quick tests | ~4 MB |
 | `data/external/` | Precomputed baselines (DP policy, carbon intensity, pricing) | ~15 MB |
-| `synthetic_data/` | Synthetic dataset generator (load, PV, EV, tariffs) | scripts only |
+| `synthetic_data/` | Synthetic dataset generator (load, PV, tariffs) | scripts only |
 | `benchmark_configs/` | YAML experiment configurations including Scenario S1 | configs only |
 | `models_pretrain/` | MP-PPO pretraining script | script only |
 
@@ -212,7 +241,7 @@ HEMS-Arena/
 │   └── visualization/           # Plotting (matplotlib, Plotly)
 ├── datasets/                    # CityLearn datasets (included)
 ├── data/external/               # Precomputed baselines (included)
-├── models/                      # Pretrained model weights (included)
+├── models/                      # Pretrained model weights (generated locally)
 ├── synthetic_data/              # Synthetic dataset generator
 ├── benchmark_configs/           # YAML experiment configs (including scenario_s1.yaml)
 ├── tests/                       # Test suite
