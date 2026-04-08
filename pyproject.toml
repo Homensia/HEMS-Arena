@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hems-arena"
+version = "0.1.0"
+description = "An open-source modular framework for reproducible evaluation of residential energy management strategies"
+readme = "README.md"
+license = {text = "BSL-1.1"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Damien Bouchabou", email = "damien.bouchabou@homensia.fr"},
+    {name = "Akrem Dabbech", email = "akrem.dabbech@homensia.fr"},
+]
+keywords = ["HEMS", "benchmarking", "reinforcement-learning", "energy-management", "CityLearn"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: Other/Proprietary License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=1.21.0",
+    "pandas>=1.3.0",
+    "matplotlib>=3.5.0",
+    "seaborn>=0.11.0",
+    "scipy>=1.7.0",
+    "torch>=2.0.0",
+    "stable-baselines3>=1.5.0",
+    "scikit-learn>=1.0.0",
+    "gymnasium==0.28.1",
+    "citylearn==2.3.1",
+    "tqdm>=4.62.0",
+    "plotly>=5.0.0",
+    "simplejson",
+    "platformdirs",
+    "requests",
+    "urllib3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0.0",
+    "jupyter>=1.0.0",
+]
+pysam = [
+    "nrel-pysam",
+]
+
+[project.urls]
+Repository = "https://github.com/Homensia/HEMS-Arena"
+
+[tool.setuptools.packages.find]
+include = ["hems*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

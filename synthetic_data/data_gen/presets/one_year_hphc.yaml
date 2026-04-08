@@ -1,0 +1,37 @@
+scenario_name: basic_data
+output_dir: ./datasets
+days: 365
+step_minutes: 60
+seed: 42
+n_houses: 1
+tariff:
+  type: FR_HP_HC
+  hp_hours: [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]
+  hc_hours: [22,23,0,1,2,3,4,5]
+  hp_price: 0.24
+  hc_price: 0.16
+pv:
+  dc_capacity_kwp: 3.0
+  tilt_deg: 30.0
+  azimuth_deg: 0.0
+  performance_ratio: 0.85
+  gamma_temp_coeff_per_c: -0.0045
+  inverter_efficiency: 0.96
+  shading_factor: 0.0
+  noct_c: 45.0
+ev:
+  evs_per_house: 1
+  battery_kwh: 50.0
+  charger_power_kw: 7.4
+  charging_efficiency: 0.92
+  kwh_per_km: 0.16
+  daily_trip_km_mean: 30.0
+  daily_trip_km_std: 15.0
+  arrival_hour_mean: 18.5
+  arrival_hour_std: 1.5
+  departure_hour_mean: 7.5
+  departure_hour_std: 1.0
+  min_target_soc_at_departure: 0.8
+  policy: hp_hc_aware
+  enable_v2h: false
+

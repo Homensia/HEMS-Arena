@@ -1,0 +1,109 @@
+# ============================================================================
+# Round-Robin Training Benchmark Example
+# ============================================================================
+# Trains a single DQN policy in round-robin across buildings:
+# Building_1 → Building_2 → ... → Building_10 → repeat
+# ============================================================================
+
+benchmark:
+  name: "DQN_RoundRobin_0"
+  description: "Round-robin DQN training with shared policy across buildings"
+  author: "Akrem Dabbech"
+  tags: ["dqn", "round_robin", "multi_building", "shared_policy"]
+  
+  # Global settings
+  seed: 42
+  output_dir: "experiments/Benchmark"
+  use_gpu: true
+  
+  # Dataset
+  dataset:
+    type: "original"
+    name: "citylearn_challenge_2022_phase_all"
+    simulation_days: 60
+    
+  # Environment (decentralized mode)
+  environment:
+    type: "citylearn"
+    central_agent: false
+    
+  # Tariff
+  tariff:
+    type: "default"
+    
+  # Agent
+  agents:
+    - name: "dqn"
+      enabled: true
+      config:
+        action_bins: 31
+        buffer_size: 200000
+        batch_size: 256
+        learning_rate: 0.0003
+        train_start_steps: 730
+        target_update_freq: 1500
+        hidden_layers: [256, 256]
+        gamma: 0.99
+        epsilon_start: 1.0
+        epsilon_end: 0.05
+        epsilon_decay: 0.995
+        epsilon_decay_steps: 61320
+        
+  # Training (Round-Robin Mode)
+  training:
+    mode: "round_robin"
+    episodes: 500
+    buildings:
+      selection: "manual"
+      ids: ["Building_1","Building_2","Building_3","Building_4","Building_5",
+            "Building_6","Building_7","Building_8","Building_9","Building_10"]
+    save_frequency: 100
+    save_best: true
+    save_final: true
+    early_stopping:
+      enabled: true
+      patience: 80
+      min_delta: 0.01
+         
+  # Validation
+  validation:
+    enabled: false
+    episodes: 20
+    frequency: 50
+    buildings:
+      selection: "manual"
+      ids: ["Building_2"]
+      
+  # Testing (on completely different buildings)
+  testing:
+    enabled: true
+    mode: "normal"
+    episodes: 20
+    buildings:
+      selection: "manual"
+      ids: ["Building_11","Building_12","Building_13",
+            "Building_14","Building_15","Building_16","Building_17"]
+      
+  # Reward
+  reward:
+    name: "custom_v5"
+    config:
+      alpha_import_hp: 0.6
+      alpha_peak: 0.01
+      alpha_pv_base: 0.10
+      alpha_pv_soc: 0.35
+      alpha_soc: 0.05
+      soc_lo: 0.30
+      soc_hi: 0.60
+      
+  # Analysis
+  analysis:
+    perform_eda: false
+    save_plots: true
+    generate_report: true
+    
+  # Advanced
+  advanced:
+    round_robin:
+      # Implementation-dependent: e.g. how many episodes per building per cycle
+      enabled: true

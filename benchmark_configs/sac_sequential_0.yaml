@@ -1,0 +1,120 @@
+# ============================================================================
+# Sequential Training Benchmark - SAC
+# ============================================================================
+# Trains SAC sequentially on multiple buildings with transfer learning
+# Building_1 → Building_2 → ... (weights transferred between)
+# ============================================================================
+
+benchmark:
+  name: "SAC_Sequential_0"
+  description: "Sequential SAC training with transfer learning and automatic entropy tuning"
+  author: "Akrem Dabbech"
+  tags: ["sac", "sequential", "transfer_learning", "continuous_control"]
+  
+  # Global settings (SAME as DQN for fair comparison)
+  seed: 42
+  output_dir: "experiments/Benchmark"
+  use_gpu: true
+  
+  # Dataset (SAME as DQN)
+  dataset:
+    type: "original"
+    name: "citylearn_challenge_2022_phase_all"
+    simulation_days: 60
+  
+  # Environment (SAME as DQN)
+  environment:
+    type: "citylearn"
+    central_agent: false
+  
+  # Tariff (SAME as DQN)
+  tariff:
+    type: "default"
+  
+  # Agent - SAC OPTIMIZED
+  agents:
+    - name: "sac"
+      enabled: true
+      config:
+        # Replay buffer (larger for SAC - more sample efficient)
+        buffer_size: 300000           # SAC benefits from diverse experiences
+        batch_size: 256               # Standard for SAC
+        
+        # Learning rates (separate for policy/critic)
+        lr_policy: 0.0003             # 3e-4 standard for SAC policy
+        lr_q: 0.0003                  # 3e-4 standard for SAC Q-networks
+        alpha_lr: 0.0003              # For automatic entropy tuning
+        
+        # Soft Actor-Critic specific
+        gamma: 0.99                   # Same discount factor as DQN
+        tau: 0.005                    # Soft update coefficient (Polyak averaging)
+        auto_entropy_tuning: true     # Automatic alpha adjustment (recommended)
+        
+        # Training
+        train_start_steps: 1000       # Start training after this many steps
+        update_frequency: 1           # Update every step (SAC is stable)
+        
+        # Network architecture
+        hidden_layers: [256, 256]     # Same as DQN for fair comparison
+        
+        # Gaussian policy parameters
+        log_std_min: -20              # Clipping for numerical stability
+        log_std_max: 2                # Clipping for numerical stability
+  
+  # Training (SAME as DQN for fair comparison)
+  training:
+    mode: "sequential"
+    episodes: 500                     # SAME as DQN
+    buildings:
+      selection: "manual"
+      ids: ["Building_1", "Building_2", "Building_3", "Building_4", "Building_5",
+            "Building_6", "Building_7", "Building_8", "Building_9", "Building_10"]
+    save_frequency: 100               # SAME as DQN
+    save_best: true
+    save_final: true
+    early_stopping:
+      enabled: true
+      patience: 80                    # SAME as DQN
+      min_delta: 0.01
+  
+  # Validation (SAME as DQN)
+  validation:
+    enabled: false
+    episodes: 20
+    frequency: 50
+    buildings:
+      selection: "manual"
+      ids: ["Building_2"]
+  
+  # Testing (SAME as DQN for fair comparison)
+  testing:
+    enabled: true
+    mode: "normal"
+    episodes: 20                      # SAME as DQN
+    buildings:
+      selection: "manual"
+      ids: ["Building_11", "Building_12", "Building_13",
+            "Building_14", "Building_15", "Building_16", "Building_17"]
+  
+  # Reward (SAME as DQN)
+  reward:
+    name: "custom_v5"
+    config:
+      alpha_import_hp: 0.6
+      alpha_peak: 0.01
+      alpha_pv_base: 0.10
+      alpha_pv_soc: 0.35
+      alpha_soc: 0.05
+      soc_lo: 0.30
+      soc_hi: 0.60
+  
+  # Analysis (SAME as DQN)
+  analysis:
+    perform_eda: false
+    save_plots: true
+    generate_report: true
+  
+  # Advanced
+  advanced:
+    sequential:
+      transfer_learning: true         # Use weights from previous building

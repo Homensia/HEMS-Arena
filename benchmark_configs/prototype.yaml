@@ -1,0 +1,202 @@
+# ============================================================================
+# HEMS Benchmark Configuration Prototype
+# ============================================================================
+# This is the template file to follow for creating benchmark experiments.
+# Copy this file and modify the parameters for your specific experiment.
+#
+# Usage: python -m hems.main --benchmark-config benchmark_configs/your_config.yaml
+# ============================================================================
+
+benchmark:
+  # -------------------------------------------------------------------------
+  # EXPERIMENT IDENTIFICATION
+  # -------------------------------------------------------------------------
+  name: "DQN_Sequential_Benchmark"
+  description: "Testing DQN on 3 buildings sequentially with validation"
+  author: "Your Name"
+  tags: ["dqn", "sequential", "multibuilding"]
+  
+  # -------------------------------------------------------------------------
+  # GLOBAL SETTINGS
+  # -------------------------------------------------------------------------
+  seed: 42                    # Random seed for reproducibility
+  output_dir: "experiments/dqn_sequential_benchmark"
+  use_gpu: true               # Use GPU if available
+  
+  # -------------------------------------------------------------------------
+  # DATASET CONFIGURATION
+  # -------------------------------------------------------------------------
+  dataset:
+    type: "original"          # Options: "original", "synthetic"
+    name: "citylearn_challenge_2022_phase_all"
+    simulation_days: 30       # Days to simulate
+    
+  # -------------------------------------------------------------------------
+  # ENVIRONMENT SETTINGS
+  # -------------------------------------------------------------------------
+  environment:
+    type: "citylearn"         # Options: "citylearn", "synthetic"
+    central_agent: false      # MUST BE FALSE for decentralized mode
+    
+  # -------------------------------------------------------------------------
+  # TARIFF CONFIGURATION
+  # -------------------------------------------------------------------------
+  tariff:
+    type: "hp_hc"             # Options: "default", "hp_hc", "tempo", "standard"
+    # HP/HC specific settings (if type = "hp_hc")
+    price_hp: 0.22            # High price (€/kWh)
+    price_hc: 0.14            # Low price (€/kWh)
+    hc_hours: [23, 0, 1, 2, 3, 4, 5, 6]  # Off-peak hours
+    
+  # -------------------------------------------------------------------------
+  # AGENTS TO EVALUATE
+  # -------------------------------------------------------------------------
+  agents:
+    - name: "dqn"
+      enabled: true
+      config:
+        # Override default DQN config from config.py
+        action_bins: 31
+        buffer_size: 300000
+        batch_size: 128
+        learning_rate: 0.0003
+        gamma: 0.99
+        epsilon_start: 1.0
+        epsilon_end: 0.01
+        epsilon_decay: 0.995
+        target_update_frequency: 10
+        learning_starts: 1000
+        # Add any other DQN-specific parameters
+        
+    - name: "rbc"
+      enabled: true
+      config:
+        # RBC specific parameters
+        soc_threshold: 0.5
+        charge_power_fraction: 0.8
+        
+    - name: "baseline"
+      enabled: true
+      config: {}  # Baseline has no parameters
+      
+  # -------------------------------------------------------------------------
+  # TRAINING CONFIGURATION
+  # -------------------------------------------------------------------------
+  training:
+    mode: "sequential"        # Options: "sequential", "parallel", "both"
+    episodes: 200             # Training episodes per building
+    
+    # Building selection
+    buildings:
+      selection: "manual"     # Options: "manual", "random", "all"
+      ids: ["Building_1", "Building_2", "Building_3"]
+      # If selection = "random":
+      # count: 3              # Number of random buildings
+      
+    # Model saving
+    save_frequency: 50        # Save checkpoint every N episodes
+    save_best: true           # Save best model per building
+    save_final: true          # Save final model
+    
+    # Early stopping
+    early_stopping:
+      enabled: true
+      patience: 50            # Episodes without improvement
+      min_delta: 0.01         # Minimum improvement threshold
+      
+  # -------------------------------------------------------------------------
+  # VALIDATION CONFIGURATION (Optional)
+  # -------------------------------------------------------------------------
+  validation:
+    enabled: true             # Set false to skip validation
+    episodes: 20              # Validation episodes
+    frequency: 50             # Validate every N training episodes
+    
+    # Building selection
+    buildings:
+      selection: "manual"     # Options: "manual", "different", "random"
+      ids: ["Building_4", "Building_5"]
+      # If selection = "different": automatically select buildings NOT in training
+      
+  # -------------------------------------------------------------------------
+  # TESTING CONFIGURATION
+  # -------------------------------------------------------------------------
+  testing:
+    enabled: true
+    mode: "normal"            # Options: "normal", "general", "specific"
+    episodes: 50              # Testing episodes
+    
+    # Building selection for "normal" mode
+    buildings:
+      selection: "manual"     # Options: "manual", "different", "random"
+      ids: ["Building_6", "Building_7"]
+      # If selection = "different": automatically select buildings NOT in train/val
+      
+    # Additional testing modes
+    run_general_scenarios: false    # Run general testing scenarios
+    run_specific_scenarios: false   # Run specific testing scenarios
+    
+  # -------------------------------------------------------------------------
+  # REWARD CONFIGURATION
+  # -------------------------------------------------------------------------
+  reward:
+    name: "custom_v5"         # Options: "custom_v5", "simple", "battery_health", etc.
+    config:
+      # CustomRewardV5 parameters
+      alpha_import_hp: 0.6
+      alpha_peak: 0.01
+      alpha_pv_base: 0.10
+      alpha_pv_soc: 0.35
+      alpha_soc: 0.05
+      soc_lo: 0.30
+      soc_hi: 0.60
+      price_high_threshold: 0.70
+      
+  # -------------------------------------------------------------------------
+  # ANALYSIS & VISUALIZATION
+  # -------------------------------------------------------------------------
+  analysis:
+    perform_eda: false        # Exploratory Data Analysis
+    save_plots: true          # Save visualization plots
+    generate_report: true     # Generate comprehensive report
+    plot_types:               # Types of plots to generate
+      - "training_curves"
+      - "performance_comparison"
+      - "cost_analysis"
+      - "battery_soc"
+      - "peak_demand"
+      
+  # -------------------------------------------------------------------------
+  # ADVANCED OPTIONS
+  # -------------------------------------------------------------------------
+  advanced:
+    # Parallel training settings (if mode = "parallel" or "both")
+    parallel:
+      num_workers: 3          # Number of parallel processes (usually = num buildings)
+      
+    # Sequential training settings (if mode = "sequential" or "both")
+    sequential:
+      transfer_learning: true  # Use weights from previous building
+      
+    # Observation space (usually don't need to change)
+    active_observations:
+      - "hour"
+      - "electricity_pricing"
+      - "net_electricity_consumption"
+      - "electrical_storage_soc"
+      - "solar_generation"
+      
+    # Comparison settings (if mode = "both")
+    compare_modes: true       # Compare sequential vs parallel results
+    
+# ============================================================================
+# NOTES:
+# ============================================================================
+# 1. Buildings MUST NOT overlap between train/validation/test unless explicitly set
+# 2. Sequential mode: trains Building_1 → Building_2 → Building_3 with weight transfer
+# 3. Parallel mode: trains all buildings simultaneously (separate agents)
+# 4. Both mode: runs both sequential and parallel, then compares results
+# 5. Decentralized mode: central_agent MUST be false
+# 6. All agent configs inherit defaults from hems/core/config.py
+# 7. Override any default by specifying it in the agent's config section
+# ============================================================================

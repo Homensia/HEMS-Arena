@@ -1,0 +1,102 @@
+# ============================================================================
+# Sequential Training Benchmark Example
+# ============================================================================
+# Trains DQN sequentially on 3 buildings with transfer learning
+# Building_1 → Building_2 → Building_3 (weights transferred between)
+# ============================================================================
+
+benchmark:
+  name: "DQN_benchmark"
+  description: "Sequential DQN training with transfer learning across 3 buildings"
+  author: "Akrem Dabbech"
+  tags: ["dqn", "sequential", "transfer_learning"]
+  
+  # Global settings
+  seed: 42
+  output_dir: "experiments/sequential_dqn"
+  use_gpu: true
+  
+  # Dataset
+  dataset:
+    type: "original"
+    name: "citylearn_challenge_2022_phase_all"
+    simulation_days: 30
+    
+  # Environment (decentralized mode)
+  environment:
+    type: "citylearn"
+    central_agent: false
+    
+  # Tariff
+  tariff:
+    type: "default"
+    
+  # Agent
+  agents:
+    - name: "dqn"
+      enabled: true
+      config:
+        action_bins: 31
+        buffer_size: 300000
+        batch_size: 128
+        learning_rate: 0.0003
+        gamma: 0.99
+        epsilon_start: 1.0
+        epsilon_end: 0.01
+        epsilon_decay: 0.995
+        
+  # Training (Sequential Mode)
+  training:
+    mode: "sequential"
+    episodes: 3000
+    buildings:
+      selection: "manual"
+      ids: ["Building_1", "Building_2","Building_3","Building_4","Building_5", "Building_6", "Building_7", "Building_8", "Building_9", "Building_10"]
+    save_frequency: 50
+    save_best: true
+    save_final: true
+    early_stopping:
+      enabled: true
+      patience: 50
+      min_delta: 0.01
+      
+  # Validation (on different buildings)
+  validation:
+    enabled: false
+    episodes: 20
+    frequency: 50
+    buildings:
+      selection: "manual"
+      ids: ["Building_4"]
+      
+  # Testing (on completely different buildings)
+  testing:
+    enabled: true
+    mode: "normal"
+    episodes: 500
+    buildings:
+      selection: "manual"
+      ids: ["Building_11", "Building_12", "Building_13", "Building_14", "Building_15", "Building_16", "Building_17"]
+      
+  # Reward
+  reward:
+    name: "custom_v5"
+    config:
+      alpha_import_hp: 0.6
+      alpha_peak: 0.01
+      alpha_pv_base: 0.10
+      alpha_pv_soc: 0.35
+      alpha_soc: 0.05
+      soc_lo: 0.30
+      soc_hi: 0.60
+      
+  # Analysis
+  analysis:
+    perform_eda: false
+    save_plots: true
+    generate_report: true
+    
+  # Advanced
+  advanced:
+    sequential:
+      transfer_learning: true  # Use weights from previous building
