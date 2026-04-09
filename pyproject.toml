@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hems-arena"
-version = "0.9.0"
+version = "0.1.0"
 description = "An open-source modular framework for reproducible evaluation of residential energy management strategies"
 readme = "README.md"
 license = {text = "BSL-1.1"}
@@ -15,7 +15,7 @@ authors = [
 ]
 keywords = ["HEMS", "benchmarking", "reinforcement-learning", "energy-management", "CityLearn"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "License :: Other/Proprietary License",
     "Programming Language :: Python :: 3",

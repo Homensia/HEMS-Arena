@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.9-blue)
 ![License](https://img.shields.io/badge/license-BSL--1.1-green)
-![Version](https://img.shields.io/badge/version-0.9.0-orange)
+![Version](https://img.shields.io/badge/version-0.1.0-orange)
 ![Venue](https://img.shields.io/badge/EDA%20'26-Banff%2C%20Canada-purple)
 
 **An Open-Source Modular Framework for Reproducible Evaluation of Residential Energy Management Strategies**
