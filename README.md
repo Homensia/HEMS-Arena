@@ -74,15 +74,16 @@ Reproducibility is built into the architecture through explicit seed management 
 
 ## Implemented Methods
 
-| Method | Type | Description |
-|---|---|---|
-| No-control (baseline) | Baseline | No active battery scheduling |
-| RBC | Heuristic | Tariff-aware rule-based charging/discharging |
-| MPC-forecast | Optimization | Forecasting-based MPC from CityLearn Challenge 2022 |
-| DQN | RL | Deep Q-Network |
-| SAC | RL | Soft Actor-Critic |
-| CB-DQN | RL | Chen-Bu-inspired DQN adapted for residential battery control |
-| MP-PPO | RL (exploratory) | Multi-policy PPO variant |
+| Method | Type | Description | Reference |
+|---|---|---|---|
+| No-control | Baseline | No active battery scheduling | -- |
+| RBC | Heuristic | Tariff-aware rule-based charging/discharging | -- |
+| MPC-forecast | Optimization | Forecasting-based MPC from CityLearn Challenge 2022 | [Nweye et al., 2023](https://proceedings.mlr.press/v220/nweye23a.html) |
+| DQN | RL | Deep Q-Network | [Mnih et al., 2015](https://doi.org/10.1038/nature14236) |
+| SAC | RL | Soft Actor-Critic | [Haarnoja et al., 2018](https://arxiv.org/abs/1801.01290) |
+| CB-DQN | RL | Chen-Bu-inspired DQN adapted for residential battery control | [Chen & Bu, 2019](https://doi.org/10.1109/ISGTEurope.2019.8905678) |
+| MP-PPO | RL (exploratory) | Multi-policy PPO variant | [Zangato et al., 2024](https://doi.org/10.3233/FAIA240907) |
+| AmbitiousEngineers | Optimization + RL | CMA-ES optimization with neural forecasting (CityLearn Challenge 2022) | [Nweye et al., 2023](https://proceedings.mlr.press/v220/nweye23a.html) |
 
 ## Installation
 
