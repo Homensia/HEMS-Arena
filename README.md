@@ -1,27 +1,42 @@
 # HEMS-Arena
 
+![Python](https://img.shields.io/badge/python-%3E%3D3.9-blue)
+![License](https://img.shields.io/badge/license-BSL--1.1-green)
+![Version](https://img.shields.io/badge/version-0.9.0-orange)
+![Venue](https://img.shields.io/badge/EDA%20'26-Banff%2C%20Canada-purple)
+
 **An Open-Source Modular Framework for Reproducible Evaluation of Residential Energy Management Strategies**
 
 > Damien Bouchabou & Akrem Dabbech  
 > Homensia Research, France  
 > EDA '26, June 22--25, 2026, Banff, Canada
 
-HEMS-Arena is an open, contribution-oriented benchmarking platform for residential energy management. Rather than proposing another standalone simulator, it provides a shared **experimental layer** in which environments are connected through adapters, controllers are built from decoupled algorithm and reward components, strategies orchestrate one or more agents, and benchmark execution is governed by a configuration-first workflow.
+HEMS-Arena is an open, contribution-oriented benchmarking platform for residential energy management.
+Rather than proposing another standalone simulator, it provides a shared **experimental layer** in which environments are connected through adapters, and benchmark execution is governed by a configuration-first workflow.
+
+Agents are built from decoupled algorithm and reward components. Strategies orchestrate one or more agents and define how they are deployed within an environment.
+
+> **Core abstraction**
+>
+> `Agent = Algorithm + Reward`
+> `Strategy = orchestration of one or more Agents`
+>
+> Algorithms and reward functions are independent, composable building blocks. A strategy wraps one or more agents and defines how they are deployed -- currently as a single centralized agent (`SingleAgentStrategy`), with the `BaseStrategy` interface designed for future multi-agent or hierarchical extensions.
 
 <p align="center">
   <img src="assets/hems_arena_overview.png" alt="HEMS-Arena Framework Overview" width="100%"/>
 </p>
 
-*Figure 1: HEMS-Arena framework. A single YAML configuration defines the full experiment; the platform instantiates strategies from a shared library, connects them to simulation environments through adapters, and exports standardized comparative results.*
+*Figure 1: HEMS-Arena framework. A single YAML configuration defines the full experiment; the platform instantiates agents from a shared library, optionally wraps them in strategies, connects them to simulation environments through adapters, and exports standardized comparative results.*
 
 ## Key Features
 
 - **Modular architecture**: Agent = Algorithm + Reward; Strategy as orchestration wrapper; registry/factory patterns
-- **Environment independence**: Adapters decouple controllers from simulator backends (CityLearn, Dummy)
+- **Environment independence**: Adapters decouple agents from simulator backends (CityLearn, Dummy)
 - **Configuration-driven experiments**: A single YAML file defines the full benchmark protocol
 - **Reproducibility**: Explicit seed management, configuration logging, artifact export
 - **Reusable evaluation**: Standardized KPIs, TOPSIS/DEA multi-criteria analysis, statistical tests (Welch's t-test, Mann-Whitney U, Cohen's d)
-- **Extensible**: New algorithms, rewards, strategies, and environment adapters can be added without modifying the core
+- **Extensible**: New algorithms, rewards, strategies, and environment adapters can be added without modifying the core (see [Contributing](#contributing))
 
 ## Architecture Overview
 
@@ -32,7 +47,7 @@ HEMS-Arena is designed not merely as a benchmark implementation for a single pap
 The architecture is guided by six core goals:
 
 1. **(G1) Modularity** -- independently swappable components
-2. **(G2) Environment independence** -- controller reuse across simulators via adapters
+2. **(G2) Environment independence** -- agent reuse across simulators via adapters
 3. **(G3) Configuration-first experimentation** -- explicit YAML specifications
 4. **(G4) Reproducibility** -- strict seed and artifact management
 5. **(G5) Extensible evaluation** -- standardized KPI computation and post-analysis
@@ -43,20 +58,15 @@ The architecture is guided by six core goals:
 HEMS-Arena is organized as a layered benchmarking stack with four levels:
 
 1. **Environment layer** -- adapters expose a unified `reset`/`step` API for heterogeneous simulators and datasets. Three adapter types bridge simulator-specific formats: observation adapters (`hems/core/adapters.py`) normalize native observations into flat vectors, action adapters convert between centralized and decentralized action modes, and reward adapters (`hems/environments/citylearn/adapters/`) extract physical signals for objective computation. Algorithms and rewards have no direct dependency on a specific backend.
-2. **Controller layer** -- an **Agent** is the executable composition of an **Algorithm** (how actions are produced) and a **Reward** (what the controller is optimized for). Algorithms are defined independently of the reward specification.
+2. **Agent layer** -- an **Agent** is the executable composition of an **Algorithm** (how actions are produced from observations) and a **Reward** (what the agent is optimized for or evaluated against). Algorithms are defined independently of the reward specification.
 3. **Strategy layer** -- a **Strategy** wraps one or more agents and defines deployment logic. The current implementation provides a `SingleAgentStrategy` where one centralized agent controls all buildings. The architecture exposes a `BaseStrategy` interface designed for future multi-agent or hierarchical extensions.
-4. **Pipeline layer** -- the `BenchmarkRunner` executes standardized train/validate/test workflows from YAML specifications. Splits, budgets, seeding, and metrics are controlled by the runner and the YAML protocol, not hidden inside controller code.
-
-```
-Agent    = Algorithm + Reward
-Strategy = orchestration of one or more Agents
-```
+4. **Pipeline layer** -- the `BenchmarkRunner` executes standardized train/test workflows from YAML specifications, with optional validation splits when specified in the YAML. Splits, budgets, seeding, and metrics are controlled by the runner and the YAML protocol, not hidden inside agent code.
 
 <p align="center">
   <img src="assets/hems_arena_architecture.png" alt="HEMS-Arena Layered Architecture" width="85%"/>
 </p>
 
-*Figure 2: HEMS-Arena as a shared experimental layer. Simulation environments are connected through adapters, control methods are composed from reusable algorithm and reward components, strategies orchestrate one or more agents, and the BenchmarkRunner executes standardized benchmark protocols.*
+*Figure 2: HEMS-Arena as a shared experimental layer. Simulation environments are connected through adapters, agents are composed from reusable algorithm and reward components, strategies orchestrate one or more agents, and the BenchmarkRunner executes standardized benchmark protocols.*
 
 ### Configuration-Driven Execution
 
@@ -74,36 +84,54 @@ Reproducibility is built into the architecture through explicit seed management 
 
 ## Implemented Methods
 
-| Method | Type | Description | Reference |
-|---|---|---|---|
-| No-control | Baseline | No active battery scheduling | -- |
-| RBC | Heuristic | Tariff-aware rule-based charging/discharging | -- |
-| MPC-forecast | Optimization | Forecasting-based MPC (CUFE team, 3rd place CityLearn Challenge 2022) | [Nweye et al., 2023](https://proceedings.mlr.press/v220/nweye23a.html) |
-| DQN | RL | Deep Q-Network | [Mnih et al., 2015](https://doi.org/10.1038/nature14236) |
-| SAC | RL | Soft Actor-Critic | [Haarnoja et al., 2018](https://arxiv.org/abs/1801.01290) |
-| CB-DQN | RL | Chen-Bu-inspired DQN adapted for residential battery control | [Chen & Bu, 2019](https://doi.org/10.1109/ISGTEurope.2019.8905678) |
-| MP-PPO | RL (exploratory) | Multi-policy PPO variant | [Zangato et al., 2024](https://doi.org/10.3233/FAIA240907) |
-| AmbitiousEngineers | Optimization + RL | CMA-ES optimization with neural forecasting (2nd place CityLearn Challenge 2022) | [Nweye et al., 2023](https://proceedings.mlr.press/v220/nweye23a.html) |
+HEMS-Arena implements a broader set of methods than those evaluated in the paper. The Scenario S1 benchmark (see [below](#reproducing-paper-results-scenario-s1)) focuses on a representative subset, while TQL, MP-PPO, and AmbitiousEngineers are provided as additional reference implementations for users who wish to extend the comparison.
+
+| Method | Type | In S1 | Description | Reference |
+|---|---|:---:|---|---|
+| No-control | Baseline | ✓ | No active battery scheduling | -- |
+| RBC | Heuristic | ✓ | Tariff-aware rule-based charging/discharging | -- |
+| MPC-forecast | Optimization | ✓ | Forecasting-based MPC (CUFE team, 3rd place CityLearn Challenge 2022) | [Nweye et al., 2023](https://proceedings.mlr.press/v220/nweye23a.html) |
+| DQN | RL | ✓ | Deep Q-Network | [Mnih et al., 2015](https://doi.org/10.1038/nature14236) |
+| SAC | RL | ✓ | Soft Actor-Critic | [Haarnoja et al., 2018](https://arxiv.org/abs/1801.01290) |
+| CB-DQN | RL | ✓ | Chen-Bu-inspired DQN adapted for residential battery control | [Chen & Bu, 2019](https://doi.org/10.1109/ISGTEurope.2019.8905678) |
+| TQL | RL | | Tabular Q-Learning | [Watkins & Dayan, 1992](https://doi.org/10.1007/BF00992698) |
+| MP-PPO | RL | | Multi-policy PPO variant (exploratory) | [Zangato et al., 2024](https://doi.org/10.3233/FAIA240907) |
+| AmbitiousEngineers | Optimization + RL | | CMA-ES optimization with neural forecasting (2nd place CityLearn Challenge 2022) | [Nweye et al., 2023](https://proceedings.mlr.press/v220/nweye23a.html) |
+
+*CUFE: Cairo University Faculty of Engineering. CityLearn Challenge 2022 rankings refer to the overall challenge leaderboard ([Nweye et al., 2023](https://proceedings.mlr.press/v220/nweye23a.html)).*
 
 ## Installation
 
 ### Prerequisites
 
-- Python 3.9+
-- (Optional) NVIDIA GPU with CUDA for accelerated training
+- Python 3.9 or later
+- (Optional) NVIDIA GPU with CUDA for accelerated training of RL methods
 
-### Setup
+### Installation for reproducing paper results
+
+This path installs the exact package versions used to produce the Scenario S1 results reported in the paper.
 
 ```bash
 git clone https://github.com/Homensia/HEMS-Arena.git
 cd HEMS-Arena
 
 python -m venv hems_env
-source hems_env/bin/activate  # Linux/Mac
-# hems_env\Scripts\activate   # Windows
+source hems_env/bin/activate   # Linux/Mac
+# hems_env\Scripts\activate    # Windows
 
 pip install -r requirements.txt
+pip install -e . --no-deps
 ```
+
+### Installation for development
+
+If you wish to extend HEMS-Arena with new algorithms, rewards, or environment adapters, install in editable mode with dependency resolution from `pyproject.toml`:
+
+```bash
+pip install -e .
+```
+
+Note that this may install slightly different versions than those used for the paper; for exact reproducibility, use the `requirements.txt` path above.
 
 ### What's Included
 
@@ -118,7 +146,7 @@ The repository ships with everything needed to run experiments:
 | `benchmark_configs/` | YAML experiment configurations including Scenario S1 | configs only |
 | `models_pretrain/` | MP-PPO pretraining script | script only |
 
-No additional downloads are required to reproduce the core paper results (No-control, RBC, MPC-forecast, DQN, SAC, CB-DQN).
+No additional downloads are required to reproduce the Scenario S1 results reported in the paper. Running MP-PPO additionally requires a pretraining step (see below); running AmbitiousEngineers requires pretrained weights available on request.
 
 > **MP-PPO pretraining**: The MP-PPO algorithm requires a pretrained predictor model. To generate it, run the pretraining script before launching MP-PPO experiments:
 > ```bash
@@ -147,7 +175,7 @@ python -m hems.main --buildings 1 --days 7 --agents baseline rbc --environment d
   <img src="assets/hems_arena_workflow.png" alt="HEMS-Arena Benchmark Workflow" width="85%"/>
 </p>
 
-*Figure 3: Configuration-driven benchmark workflow. A single YAML specification defines the scenario, methods, and protocol; the pipeline then instantiates the corresponding components, executes the train/validate/test stages, and exports standardized artifacts including time-series traces, aggregated KPIs, MCDA rankings, and statistical summaries.*
+*Figure 3: Configuration-driven benchmark workflow. A single YAML specification defines the scenario, methods, and protocol; the pipeline then instantiates the corresponding components, executes the train/test stages, and exports standardized artifacts including time-series traces, aggregated KPIs, MCDA rankings, and statistical summaries.*
 
 The reference benchmark from the paper is fully specified in [`benchmark_configs/scenario_s1.yaml`](benchmark_configs/scenario_s1.yaml).
 
@@ -159,11 +187,15 @@ The reference benchmark from the paper is fully specified in [`benchmark_configs
 | Buildings | 17 residential single-family buildings |
 | Training set | Buildings 1--10 |
 | Test set | Buildings 11--17 |
+| Validation | None (direct train--test design) |
 | Tariff | French TOU (HP: 0.22 EUR/kWh, HC: 0.14 EUR/kWh) |
 | Horizon | Full year (8760 hourly timesteps) |
-| Training episodes | 100 per method |
+| Training episodes | 100 per method (876,000 timesteps per run) |
+| Repeated runs | 100 independent end-to-end runs per RL method |
 | Base seed | 42 |
 | Methods | No-control, RBC, MPC-forecast, DQN, SAC, CB-DQN |
+
+The base seed 42 is the default initialization reference. For statistical reporting (mean +/- std, significance tests), 100 independent runs with seeds 1--100 are executed.
 
 ### Single run
 
@@ -181,7 +213,7 @@ for seed in $(seq 1 100); do
 done
 ```
 
-> **Compute budget**: Each method takes approximately 8--25 hours on a Dell G16 7630 (Intel i9-13900HX, NVIDIA RTX 4070, 32 GB RAM). The full 100-run benchmark requires significant compute resources.
+> **Compute budget**: Each method takes approximately 8--25 hours **per run** on a Dell G16 7630 (Intel i9-13900HX, NVIDIA RTX 4070, 32 GB RAM). The full 100-run benchmark across all 6 methods represents approximately 50--150 GPU-days depending on the method mix.
 
 ### Reference Results (Scenario S1)
 
@@ -198,7 +230,7 @@ The following tables summarize the results reported in the paper. For learning-b
 | SAC | 1005.2 +/- 15.2 | -19.3% | 68.9 | 162.1 | 6.68 |
 | CB-DQN | 998.7 +/- 14.1 | -19.8% | 69.8 | 159.3 | 6.61 |
 
-*Cost = annual total electricity cost. Delta = relative to No-control. SC = PV self-consumption. Cycles = battery cycles. Peak = peak demand.*
+*Cost = annual total electricity cost. Delta = relative to No-control. SC = PV self-consumption. Cycles = battery cycles. Peak = peak demand. Deterministic methods (No-control, RBC, MPC-forecast) yield identical results across seeds; their reported std is 0 by construction.*
 
 #### Multi-Criteria Analysis (TOPSIS & DEA)
 
@@ -244,8 +276,8 @@ HEMS-Arena/
 ├── benchmark_configs/           # YAML experiment configs (including scenario_s1.yaml)
 ├── tests/                       # Test suite
 ├── scripts/                     # Standalone diagnostic utilities
-├── requirements.txt             # Python dependencies
-└── pyproject.toml               # Package metadata
+├── requirements.txt             # Pinned dependencies (for paper reproduction)
+└── pyproject.toml               # Package metadata (for development)
 ```
 
 ## CLI Reference
@@ -267,7 +299,7 @@ python -m hems.main [OPTIONS]
 | `--benchmark-config PATH` | Run from YAML config file |
 | `--seed N` | Random seed (default: 42) |
 | `--output-dir DIR` | Output directory (default: `results`) |
-| `--eda` | Perform exploratory data analysis |
+| `--eda` | Run exploratory data analysis on the dataset (distribution plots, correlation matrices, time-series decomposition) |
 
 ## Running Tests
 
@@ -278,6 +310,12 @@ pytest tests/ -v
 # Single test
 pytest tests/test_mp_ppo.py -v
 ```
+
+## Contributing
+
+HEMS-Arena is designed to grow through community contributions. New algorithms, rewards, strategies, and environment adapters can be added without modifying the benchmark core, thanks to the registry/factory pattern.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for a step-by-step guide on how to add new components.
 
 ## Citation
 
@@ -295,6 +333,8 @@ If you use HEMS-Arena in your research, please cite the corresponding paper upon
 }
 ```
 
+<!-- TODO: Add DOI badge and arXiv link after publication -->
+
 ## License
 
 This project is licensed under the [Business Source License 1.1](LICENSE) (BSL 1.1). You are free to use, modify, and contribute to this code for non-commercial purposes (research, education, personal use). Commercial use requires a separate license from Homensia. After April 7, 2036, the code will be available under the Apache License 2.0.
@@ -303,6 +343,6 @@ See the [LICENSE](LICENSE) file for full details.
 
 ## Acknowledgments
 
-- [CityLearn](https://github.com/intelligent-environments-lab/CityLearn) -- Building simulation environment
+- [CityLearn](https://github.com/intelligent-environments-lab/CityLearn) (MIT License) -- Building simulation environment and Challenge 2022 dataset. The dataset redistributed in `datasets/` is sourced from the [CityLearn](https://github.com/intelligent-environments-lab/CityLearn) package. See [datasets/README.md](datasets/README.md) for details and citation.
 - [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3) -- RL algorithm implementations
 - [PyTorch](https://pytorch.org/) -- Deep learning framework

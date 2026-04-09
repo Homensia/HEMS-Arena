@@ -1,3 +1,5 @@
+# Exact package versions used to produce the results reported in
+# Bouchabou & Dabbech, "HEMS-Arena", EDA '26.
 numpy>=1.21.0
 pandas>=1.3.0
 matplotlib>=3.5.0
